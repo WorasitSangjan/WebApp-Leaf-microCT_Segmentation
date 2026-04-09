@@ -1,0 +1,21 @@
+name: Sync to Hugging Face Spaces
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Push to Hugging Face Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          git remote add space https://WorasitSangjan:$HF_TOKEN@huggingface.co/spaces/WorasitSangjan/Leaf-CT-Segmentation
+          git push space main:main --force
