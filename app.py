@@ -29,6 +29,14 @@ MODEL_REPO = "WorasitSangjan/Leaf-CT-Segmentation-Model"
 MODEL_FILE = "best_model.pth"
 DEVICE     = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
+EXAMPLE_PATHS = [
+    ("examples/Lantana.png",  "Lantana"),
+    ("examples/Olive.png",    "Olive"),
+    ("examples/Pine.png",     "Pine"),
+    ("examples/Viburnum.png", "Viburnum"),
+    ("examples/Wheat.png",    "Wheat"),
+]
+
 
 # ── MODEL ARCHITECTURE ────────────────────────────────────────────────────────
 class EoMT_ViTL(nn.Module):
@@ -569,7 +577,9 @@ td, tbody td, tr td {
 #img-color, #img-color .wrap, #img-overlay, #img-overlay .wrap,
 #img-stack-preview, #img-stack-preview .wrap, #img-stack-label, #img-stack-label .wrap,
 #img-stack-color, #img-stack-color .wrap, #img-stack-overlay, #img-stack-overlay .wrap,
-#stack-file-upload, #stack-file-upload .wrap {
+#stack-file-upload, #stack-file-upload .wrap,
+#example-gallery, #example-gallery .wrap, #example-gallery .thumbnail-item,
+#example-gallery button, #example-gallery li {
     background-color: #a8bfaa !important;
 }
 
@@ -644,6 +654,24 @@ td, tbody td, tr td {
     height: 100% !important;
 }
 
+/* ── EXAMPLE GALLERY CAPTIONS — instant on render, no flash ─────────────── */
+#example-gallery [class*="caption"],
+#example-gallery figcaption,
+#example-gallery .caption-label {
+    background: #2e7d32 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    position: absolute !important;
+    top: 4px !important;
+    left: 4px !important;
+    bottom: auto !important;
+    right: auto !important;
+    border-radius: 4px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    padding: 2px 8px !important;
+}
+
 /* ── LOADING / PROCESSING STATE ──────────────────────────────────────────── */
 /* Keep Gradio's built-in shimmer animation but recolor the border */
 .generating, [class*="generating"],
@@ -678,7 +706,7 @@ button.pending, button[disabled],
 }
 """
 
-with gr.Blocks(title="Leaf CT Scan Segmentation") as demo:
+with gr.Blocks(title="Leaf CT Scan Segmentation", css=css) as demo:
 
     gr.HTML("""
         <h1 style='color:#1b5e20; font-size:2.2rem; margin-bottom:6px;'>Leaf CT Scan Segmentation</h1>
@@ -720,7 +748,23 @@ with gr.Blocks(title="Leaf CT Scan Segmentation") as demo:
                 submit_btn = gr.Button("Run Segmentation", variant="primary", elem_id="run-btn")
                 clear_btn  = gr.Button("Clear", variant="secondary")
 
-            with gr.Column(visible=True):
+            gr.HTML("""
+                <h2 style='margin:10px 0 0 0; color:#2e7d32'>Example Images</h2>
+                <p style='margin:0; color:#555; font-size:15px;'>Click an image to load it into the upload area.</p>
+            """)
+            example_gallery = gr.Gallery(
+                value=EXAMPLE_PATHS,
+                show_label=False,
+                columns=5,
+                rows=1,
+                height=160,
+                min_width=50,
+                object_fit="contain",
+                allow_preview=False,
+                elem_id="example-gallery",
+            )
+
+            with gr.Column():
                 gr.HTML("<h2 style='margin:0 0 2px 0; color:#2e7d32'>Area Statistics</h2>")
                 area_table = gr.Dataframe(
                     headers=["Class", "Pixels", "Percentage"],
@@ -734,6 +778,15 @@ with gr.Blocks(title="Leaf CT Scan Segmentation") as demo:
                     dl_label   = gr.File(label="2. Label Mask", interactive=False, elem_id="dl-label", height=80)
                     dl_color   = gr.File(label="3. Color Mask", interactive=False, elem_id="dl-color", height=80)
                     dl_overlay = gr.File(label="4. Overlay Image", interactive=False, elem_id="dl-overlay", height=80)
+
+            def load_example_image(evt: gr.SelectData):
+                img = Image.open(EXAMPLE_PATHS[evt.index][0])
+                return img, "✅ Example loaded — Click 'Run Segmentation' to process."
+
+            example_gallery.select(
+                fn=load_example_image,
+                outputs=[input_image, status],
+            )
 
             input_image.upload(
                 fn=lambda img: (img, "✅ Image uploaded — Click 'Run Segmentation' to process."),
@@ -783,7 +836,7 @@ with gr.Blocks(title="Leaf CT Scan Segmentation") as demo:
                 stack_submit_btn = gr.Button("Run Segmentation on Stack", variant="primary", elem_id="stack-run-btn")
                 stack_clear_btn  = gr.Button("Clear", variant="secondary")
 
-            with gr.Column(visible=True):
+            with gr.Column():
                 gr.HTML("<h2 style='margin:0 0 2px 0; color:#2e7d32'>Volume Statistics (All slices)</h2>")
                 stack_area_table = gr.Dataframe(
                     headers=["Class", "Voxels", "Volume %"],
@@ -796,7 +849,7 @@ with gr.Blocks(title="Leaf CT Scan Segmentation") as demo:
                     stack_dl_csv          = gr.File(label="1. Area All Slices", interactive=False, elem_id="stack-dl-csv", height=80)
                     stack_dl_perslice_csv = gr.File(label="2. Area Per Slice", interactive=False, elem_id="stack-dl-perslice", height=80)
                     stack_dl_label        = gr.File(label="3. Label All Slices", interactive=False, elem_id="stack-dl-label", height=80)
-                    stack_dl_color        = gr.File(label="4. ColorAll Slices", interactive=False, elem_id="stack-dl-color", height=80)
+                    stack_dl_color        = gr.File(label="4. Color All Slices", interactive=False, elem_id="stack-dl-color", height=80)
                     stack_dl_overlay      = gr.File(label="5. Overlay All Slices", interactive=False, elem_id="stack-dl-overlay", height=80)
 
             stack_file.upload(
@@ -822,6 +875,118 @@ with gr.Blocks(title="Leaf CT Scan Segmentation") as demo:
         inputs=[],
         outputs=[],
         js="""() => {
+            function fixGradioSpecific() {
+                // .gradio-container
+                var container = document.querySelector('.gradio-container');
+                if (container) {
+                    container.style.setProperty('background', '#f7faf7', 'important');
+                    container.style.setProperty('max-width', '100%', 'important');
+                    container.style.setProperty('padding', '20px', 'important');
+                    container.style.setProperty('color', '#111', 'important');
+                }
+                // All .block elements — white background, rounded
+                // Skip any block that contains (or IS) an image/upload block
+                var greenIds = ['img-input','img-label','img-color','img-overlay',
+                                'img-stack-preview','img-stack-label','img-stack-color','img-stack-overlay',
+                                'stack-file-upload'];
+                document.querySelectorAll('.block').forEach(function(el) {
+                    var isGreen = greenIds.some(function(id) {
+                        return el.id === id || el.querySelector('#' + id);
+                    });
+                    if (!isGreen) {
+                        el.style.setProperty('background', '#ffffff', 'important');
+                        el.style.setProperty('border-radius', '8px', 'important');
+                        el.style.setProperty('overflow', 'hidden', 'important');
+                    }
+                });
+                // Result col inner blocks — remove double borders
+                ['result-col', 'stack-result-col'].forEach(function(id) {
+                    var col = document.getElementById(id);
+                    if (!col) return;
+                    col.querySelectorAll('.block, [class*="tabs"]').forEach(function(el) {
+                        el.style.setProperty('border', 'none', 'important');
+                        el.style.setProperty('border-radius', '0', 'important');
+                        el.style.setProperty('box-shadow', 'none', 'important');
+                        el.style.setProperty('background', 'transparent', 'important');
+                    });
+                });
+                // Image block inner .wrap — sage green background
+                ['img-input','img-label','img-color','img-overlay',
+                 'img-stack-preview','img-stack-label','img-stack-color','img-stack-overlay',
+                 'stack-file-upload'].forEach(function(id) {
+                    var el = document.getElementById(id);
+                    if (!el) return;
+                    el.querySelectorAll('div').forEach(function(w) {
+                        w.style.setProperty('background-color', '#a8bfaa', 'important');
+                    });
+                });
+                // Stack file upload — compact height
+                var su = document.getElementById('stack-file-upload');
+                if (su) {
+                    [su].concat(Array.from(su.querySelectorAll('> div, .wrap, .upload-container'))).forEach(function(el) {
+                        el.style.setProperty('min-height', 'unset', 'important');
+                        el.style.setProperty('height', '70px', 'important');
+                        el.style.setProperty('max-height', '70px', 'important');
+                    });
+                    var wrap = su.querySelector('.wrap, .upload-container');
+                    if (wrap) {
+                        wrap.style.setProperty('flex-direction', 'row', 'important');
+                        wrap.style.setProperty('align-items', 'center', 'important');
+                        wrap.style.setProperty('justify-content', 'center', 'important');
+                        wrap.style.setProperty('gap', '8px', 'important');
+                    }
+                    su.querySelectorAll('p').forEach(function(p) { p.style.setProperty('margin', '0', 'important'); });
+                    su.querySelectorAll('svg').forEach(function(s) { s.style.setProperty('width', '20px', 'important'); s.style.setProperty('height', '20px', 'important'); });
+                }
+                // Hide image input toolbar
+                var imgInput = document.getElementById('img-input');
+                if (imgInput) {
+                    imgInput.querySelectorAll('.source-selection, .icon-buttons, .toolbar, [data-testid="source-select"]').forEach(function(el) {
+                        el.style.setProperty('display', 'none', 'important');
+                    });
+                }
+                // File download blocks — compact height
+                ['dl-csv','dl-label','dl-color','dl-overlay','stack-dl-csv','stack-dl-perslice','stack-dl-label','stack-dl-color','stack-dl-overlay'].forEach(function(id) {
+                    var el = document.getElementById(id);
+                    if (!el) return;
+                    el.style.setProperty('background-color', '#ffffff', 'important');
+                    el.querySelectorAll('.upload-container, [data-testid="file"], > div').forEach(function(child) {
+                        child.style.setProperty('min-height', 'unset', 'important');
+                        child.style.setProperty('height', '60px', 'important');
+                        child.style.setProperty('max-height', '60px', 'important');
+                        child.style.setProperty('overflow', 'hidden', 'important');
+                        child.style.setProperty('background-color', '#ffffff', 'important');
+                    });
+                });
+                // Secondary / Clear buttons
+                document.querySelectorAll('button.secondary').forEach(function(btn) {
+                    btn.style.setProperty('background', '#f1f8f1', 'important');
+                    btn.style.setProperty('border', '1px solid #a5d6a7', 'important');
+                    btn.style.setProperty('color', '#2e7d32', 'important');
+                    btn.style.setProperty('-webkit-text-fill-color', '#2e7d32', 'important');
+                });
+                // Dataframe / table wrappers
+                document.querySelectorAll('.table-wrap, .svelte-table, .gr-dataframe, .dataframe-container, [data-testid="dataframe"]').forEach(function(el) {
+                    el.style.setProperty('background', '#fff', 'important');
+                });
+                // Cell wrappers
+                document.querySelectorAll('.cell-wrap').forEach(function(el) {
+                    el.style.setProperty('background', 'transparent', 'important');
+                    el.style.setProperty('color', '#111111', 'important');
+                    el.style.setProperty('-webkit-text-fill-color', '#111111', 'important');
+                });
+                // Progress / loading indicators
+                document.querySelectorAll('.progress-bar, [id="progress-bar"]').forEach(function(el) {
+                    el.style.setProperty('background', '#2e7d32', 'important');
+                });
+                document.querySelectorAll('.eta-bar, .timer').forEach(function(el) {
+                    el.style.setProperty('background', '#2e7d32', 'important');
+                    el.style.setProperty('color', '#ffffff', 'important');
+                    el.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+                });
+                // Always re-apply image block green last (overrides .block white above)
+                fixImageLabels();
+            }
             function fixBadgeText() {
                 document.querySelectorAll('*').forEach(function(el) {
                     if (el.children.length > 3) return;
@@ -848,18 +1013,17 @@ with gr.Blocks(title="Leaf CT Scan Segmentation") as demo:
                 ['dl-csv','dl-label','dl-color','dl-overlay','stack-dl-csv','stack-dl-perslice','stack-dl-label','stack-dl-color','stack-dl-overlay'].forEach(function(id) {
                     var container = document.getElementById(id);
                     if (!container) return;
-                    container.querySelectorAll('*').forEach(function(el) {
-                        var bg = window.getComputedStyle(el).backgroundColor;
-                        var m = bg.match(/rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)/);
-                        if (!m) return;
-                        var brightness = (parseInt(m[1])*299 + parseInt(m[2])*587 + parseInt(m[3])*114) / 1000;
-                        if (brightness < 80) {
-                            // Only set white on this element itself, not its children (filename text stays dark)
-                            el.style.setProperty('color', '#ffffff', 'important');
-                            el.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
-                        }
+                    // Force white background on container and wrappers
+                    container.style.setProperty('background-color', '#ffffff', 'important');
+                    container.querySelectorAll('.wrap, .upload-container, > div').forEach(function(el) {
+                        el.style.setProperty('background-color', '#ffffff', 'important');
                     });
-                    // Ensure filename text and links stay black
+                    // Label text white
+                    container.querySelectorAll('label, label *').forEach(function(el) {
+                        el.style.setProperty('color', '#ffffff', 'important');
+                        el.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+                    });
+                    // Filename text black
                     container.querySelectorAll('a, [class*="file-name"], [class*="filename"], span:not([class*="label"])').forEach(function(el) {
                         el.style.setProperty('color', '#111111', 'important');
                         el.style.setProperty('-webkit-text-fill-color', '#111111', 'important');
@@ -884,11 +1048,26 @@ with gr.Blocks(title="Leaf CT Scan Segmentation") as demo:
                  'stack-file-upload'].forEach(function(id) {
                     var block = document.getElementById(id);
                     if (!block) return;
+                    block.style.setProperty('background-color', '#a8bfaa', 'important');
+                    block.querySelectorAll('div').forEach(function(el) {
+                        el.style.setProperty('background-color', '#a8bfaa', 'important');
+                    });
                     block.querySelectorAll('label, label *, [class*="label"] span, [class*="label"] *').forEach(function(el) {
                         el.style.setProperty('color', '#ffffff', 'important');
                         el.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
                     });
                 });
+                // gr.File outer container — same treatment as gr.Image blocks
+                var fileUpload = document.getElementById('stack-file-upload');
+                if (fileUpload) {
+                    var outerBlock = fileUpload.closest('[data-testid="file"]') || fileUpload.parentElement;
+                    if (outerBlock) {
+                        outerBlock.style.setProperty('background-color', '#a8bfaa', 'important');
+                        outerBlock.querySelectorAll('div').forEach(function(el) {
+                            el.style.setProperty('background-color', '#a8bfaa', 'important');
+                        });
+                    }
+                }
             }
             function fixDropText() {
                 document.querySelectorAll('p, span').forEach(function(el) {
@@ -896,6 +1075,58 @@ with gr.Blocks(title="Leaf CT Scan Segmentation") as demo:
                     if (t === 'Drop Image Here' || t === 'Drop File Here' || t === 'Click to Upload' || t === 'or' || t === '- or -') {
                         el.style.setProperty('color', '#ffffff', 'important');
                         el.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+                    }
+                });
+            }
+            function fixExamples() {
+                // Hide the auto "Examples" label
+                document.querySelectorAll('span, div, p, label').forEach(function(el) {
+                    var t = (el.innerText || el.textContent || '').trim();
+                    if (t === 'Examples') {
+                        el.style.setProperty('display', 'none', 'important');
+                    }
+                });
+                // Fix all buttons that contain only text (example name buttons)
+                document.querySelectorAll('button').forEach(function(btn) {
+                    var t = (btn.innerText || btn.textContent || '').trim();
+                    if (t === 'Lantana' || t === 'Olive' || t === 'Pine' || t === 'Viburnum' || t === 'Wheat') {
+                        btn.style.setProperty('color', '#111111', 'important');
+                        btn.style.setProperty('-webkit-text-fill-color', '#111111', 'important');
+                        btn.style.setProperty('background', '#f1f8f1', 'important');
+                        btn.style.setProperty('border', '1px solid #c8e6c9', 'important');
+                        btn.querySelectorAll('*').forEach(function(child) {
+                            child.style.setProperty('color', '#111111', 'important');
+                            child.style.setProperty('-webkit-text-fill-color', '#111111', 'important');
+                        });
+                    }
+                });
+            }
+            function fixGalleryCaptions() {
+                var gallery = document.getElementById('example-gallery');
+                if (!gallery) return;
+                gallery.style.setProperty('margin-top', '-20px', 'important');
+                gallery.style.setProperty('padding-top', '0', 'important');
+                var parent = gallery.parentElement;
+                if (parent) {
+                    parent.style.setProperty('margin-top', '0', 'important');
+                    parent.style.setProperty('padding-top', '0', 'important');
+                }
+                gallery.querySelectorAll('[class*="caption"], figcaption, .caption-label').forEach(function(el) {
+                    el.style.setProperty('color', '#ffffff', 'important');
+                    el.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+                    el.style.setProperty('background', '#2e7d32', 'important');
+                    el.style.setProperty('position', 'absolute', 'important');
+                    el.style.setProperty('top', '4px', 'important');
+                    el.style.setProperty('left', '4px', 'important');
+                    el.style.setProperty('bottom', 'auto', 'important');
+                    el.style.setProperty('right', 'auto', 'important');
+                    el.style.setProperty('border-radius', '4px', 'important');
+                    el.style.setProperty('font-size', '13px', 'important');
+                    el.style.setProperty('font-weight', '600', 'important');
+                    el.style.setProperty('padding', '2px 8px', 'important');
+                    var parent = el.parentElement;
+                    if (parent && window.getComputedStyle(parent).position === 'static') {
+                        parent.style.setProperty('position', 'relative', 'important');
                     }
                 });
             }
@@ -955,6 +1186,9 @@ with gr.Blocks(title="Leaf CT Scan Segmentation") as demo:
                     });
                 }
             }
+            setTimeout(fixGradioSpecific, 300);
+            setTimeout(fixGradioSpecific, 1000);
+            setTimeout(fixGradioSpecific, 3000);
             setTimeout(fixBadgeText, 500);
             setTimeout(fixBadgeText, 1500);
             setTimeout(fixBadgeText, 3000);
@@ -966,6 +1200,12 @@ with gr.Blocks(title="Leaf CT Scan Segmentation") as demo:
             setTimeout(fixTableHeaders, 3000);
             setTimeout(fixDropText, 500);
             setTimeout(fixDropText, 1500);
+            setTimeout(fixExamples, 500);
+            setTimeout(fixExamples, 1500);
+            setTimeout(fixExamples, 3000);
+            setTimeout(fixGalleryCaptions, 500);
+            setTimeout(fixGalleryCaptions, 1500);
+            setTimeout(fixGalleryCaptions, 3000);
             setTimeout(fixCorners, 500);
             setTimeout(fixCorners, 1500);
             setTimeout(fixCorners, 3000);
@@ -989,19 +1229,26 @@ with gr.Blocks(title="Leaf CT Scan Segmentation") as demo:
             function fixTabColors() {
                 document.querySelectorAll('button[role="tab"]').forEach(function(btn) {
                     if (btn.getAttribute('aria-selected') === 'true') {
+                        btn.style.setProperty('background', '#2e7d32', 'important');
                         btn.style.setProperty('color', '#ffffff', 'important');
                         btn.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+                        btn.style.setProperty('border-color', '#2e7d32', 'important');
                     } else {
+                        btn.style.setProperty('background', '#f1f8f1', 'important');
                         btn.style.setProperty('color', '#2e7d32', 'important');
                         btn.style.setProperty('-webkit-text-fill-color', '#2e7d32', 'important');
+                        btn.style.setProperty('border', '1px solid #c8e6c9', 'important');
                     }
+                    btn.style.setProperty('border-bottom', 'none', 'important');
+                    btn.style.setProperty('box-shadow', 'none', 'important');
+                    btn.style.setProperty('border-radius', '6px 6px 0 0', 'important');
                 });
             }
             fixTabColors();
             fixTableHeaders();
             var tabObserver = new MutationObserver(function() { fixTabColors(); });
             tabObserver.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['aria-selected', 'class'] });
-            var tableObserver = new MutationObserver(function() { fixTableHeaders(); });
+            var tableObserver = new MutationObserver(function() { fixGradioSpecific(); fixTableHeaders(); fixExamples(); fixGalleryCaptions(); });
             tableObserver.observe(document.body, { subtree: true, childList: true });
             return [];
         }"""
@@ -1012,5 +1259,4 @@ demo.launch(
     server_name="0.0.0.0",
     share=False,
     debug=False,
-    css=css,
 )
