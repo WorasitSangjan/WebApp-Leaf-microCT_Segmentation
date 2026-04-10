@@ -583,9 +583,11 @@ td, tbody td, tr td {
 #img-color, #img-color .wrap, #img-overlay, #img-overlay .wrap,
 #img-stack-preview, #img-stack-preview .wrap, #img-stack-label, #img-stack-label .wrap,
 #img-stack-color, #img-stack-color .wrap, #img-stack-overlay, #img-stack-overlay .wrap,
-#stack-file-upload, #stack-file-upload .wrap,
 #example-gallery, #example-gallery .wrap, #example-gallery .thumbnail-item,
 #example-gallery button, #example-gallery li {
+    background-color: #a8bfaa !important;
+}
+#stack-file-upload, #stack-file-upload .wrap, #stack-file-upload > div {
     background-color: #a8bfaa !important;
 }
 
@@ -1063,17 +1065,6 @@ with gr.Blocks(title="Leaf CT Scan Segmentation", css=css) as demo:
                         el.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
                     });
                 });
-                // gr.File outer container — same treatment as gr.Image blocks
-                var fileUpload = document.getElementById('stack-file-upload');
-                if (fileUpload) {
-                    var outerBlock = fileUpload.closest('[data-testid="file"]') || fileUpload.parentElement;
-                    if (outerBlock) {
-                        outerBlock.style.setProperty('background-color', '#a8bfaa', 'important');
-                        outerBlock.querySelectorAll('div').forEach(function(el) {
-                            el.style.setProperty('background-color', '#a8bfaa', 'important');
-                        });
-                    }
-                }
             }
             function fixDropText() {
                 document.querySelectorAll('p, span').forEach(function(el) {
