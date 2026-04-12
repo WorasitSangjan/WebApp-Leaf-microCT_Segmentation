@@ -49,6 +49,12 @@ EXAMPLE_PATHS = [
     ("examples/Wheat.png",    "Wheat"),
 ]
 
+STACK_EXAMPLE_PATHS = [
+    ("examples/stacks/Arabidopsis.tif", "examples/stacks/Arabidopsis_preview.png", "Arabidopsis"),
+    ("examples/stacks/Grape.tif",       "examples/stacks/Grape_preview.png",       "Grape"),
+    ("examples/stacks/Oak.tif",         "examples/stacks/Oak_preview.png",         "Oak"),
+]
+
 
 # ── MODEL ARCHITECTURE ────────────────────────────────────────────────────────
 class EoMT_ViTL(nn.Module):
@@ -520,7 +526,6 @@ button.secondary:hover { background: var(--c-green-light) !important; }
 table, .table-wrap, .svelte-table, .gr-dataframe,
 [data-testid="dataframe"], .dataframe-container { background: var(--c-surface) !important; }
 .dataframe-container { margin-top: 2px !important; }
-#example-gallery { margin-top: 4px !important; }
 #area-table, #stack-area-table { margin-top: -20px !important; }
 #dl-row, #stack-dl-row { margin-top: -20px !important; }
 
@@ -565,8 +570,7 @@ td, tbody td, tr td,
 #img-stack-label, #img-stack-label .wrap,
 #img-stack-color, #img-stack-color .wrap,
 #img-stack-overlay, #img-stack-overlay .wrap,
-#stack-file-upload, #stack-file-upload .wrap, #stack-file-upload > div,
-#example-gallery {
+#stack-file-upload, #stack-file-upload .wrap, #stack-file-upload > div {
     background-color: var(--c-img-bg) !important;
 }
 
@@ -677,44 +681,42 @@ td, tbody td, tr td,
     box-shadow: none !important;
 }
 
-/* ── EXAMPLES GALLERY ────────────────────────────────────────────────────── */
-/* Hide default "Examples" header (class/attribute only — not bare <label>) */
-#example-gallery .label,
-#example-gallery [data-testid="block-label"],
-#example-gallery thead { display: none !important; }
-#example-gallery table { display: block !important; border: none !important; background: transparent !important; }
-#example-gallery tbody {
-    display: -webkit-flex !important; display: flex !important;
-    -webkit-flex-direction: row !important; flex-direction: row !important;
-    gap: 10px !important; padding: 4px 0 !important; background: transparent !important;
+/* ── EXAMPLES GALLERY (single image + stack) ─────────────────────────────── */
+#example-gallery, #stack-example-gallery {
+    gap: 10px !important; margin-top: 4px !important;
+    flex-wrap: nowrap !important; overflow-x: auto !important;
+    background: transparent !important;
 }
-/* :nth-child(even) needed to override the global striped-row background rule */
-#example-gallery tbody tr, #example-gallery tbody tr:nth-child(even) {
-    display: block !important; -webkit-flex: 1 !important; flex: 1 !important;
-    cursor: pointer !important; text-align: center !important;
-    padding: 10px 8px !important; border-radius: 10px !important;
+#example-gallery .ex-card, #stack-example-gallery .stack-ex-card {
+    padding: 10px 8px !important; border-radius: 8px !important; overflow: hidden !important;
     background: var(--c-img-bg) !important; border: 1px solid var(--c-green-light) !important;
+    text-align: center !important;
     -webkit-transition: background-color 0.15s ease, border-color 0.15s ease !important;
             transition: background-color 0.15s ease, border-color 0.15s ease !important;
 }
-#example-gallery tbody tr:hover, #example-gallery tbody tr:nth-child(even):hover {
+#example-gallery .ex-card:hover, #stack-example-gallery .stack-ex-card:hover {
     background: var(--c-green-pale) !important; border-color: var(--c-green) !important;
 }
-#example-gallery tbody td:first-child {  /* image cell — fixed height, centred */
-    display: -webkit-flex !important; display: flex !important;
-    -webkit-align-items: center !important; align-items: center !important;
-    -webkit-justify-content: center !important; justify-content: center !important;
-    height: 120px !important; min-width: 180px !important; padding: 0 !important; border: none !important; background: transparent !important;
+#example-gallery .ex-thumb img, #stack-example-gallery .stack-ex-thumb img {
+    width: 100% !important; object-fit: contain !important; border-radius: 4px !important;
 }
-#example-gallery tbody td img {
-    max-height: 190px !important; width: 100% !important; max-width: 100% !important;
-    object-fit: contain !important; border-radius: 8px !important; display: block !important;
+#example-gallery .ex-thumb, #example-gallery .ex-thumb .wrap, #example-gallery .ex-thumb > div,
+#stack-example-gallery .stack-ex-thumb, #stack-example-gallery .stack-ex-thumb .wrap,
+#stack-example-gallery .stack-ex-thumb > div {
+    background: transparent !important; border: none !important; box-shadow: none !important;
 }
-#example-gallery tbody td:last-child {  /* name cell */
-    display: block !important; padding: 6px 0 0 !important; border: none !important;
-    background: transparent !important; text-align: center !important;
-    font-size: 0.875rem !important; font-weight: 600 !important; line-height: 1.3 !important;
+#example-gallery .ex-thumb label, #example-gallery .ex-thumb [data-testid="block-label"],
+#stack-example-gallery .stack-ex-thumb label,
+#stack-example-gallery .stack-ex-thumb [data-testid="block-label"] { display: none !important; }
+#example-gallery .ex-btn, #stack-example-gallery .stack-ex-btn {
+    margin-top: 6px !important; width: 100% !important;
+    background: transparent !important; border: none !important; box-shadow: none !important;
+    font-size: 0.875rem !important; font-weight: 600 !important;
     color: var(--c-text) !important; -webkit-text-fill-color: var(--c-text) !important;
+    padding: 0 !important; cursor: pointer !important;
+}
+#example-gallery .ex-btn:hover, #stack-example-gallery .stack-ex-btn:hover {
+    color: var(--c-green) !important; -webkit-text-fill-color: var(--c-green) !important;
 }
 
 /* ── RESPONSIVE ──────────────────────────────────────────────────────────── */
@@ -794,14 +796,14 @@ with gr.Blocks(title="Leaf CT Scan Segmentation") as demo:
                 submit_btn = gr.Button("Run Segmentation", variant="primary", elem_id="run-btn")
                 clear_btn  = gr.Button("Clear", variant="secondary")
 
-            gr.HTML("<h2>Example Images</h2><p>Click an image below to load it.</p>")
-            _plant_name = gr.Textbox(visible=False)
-            gr.Examples(
-                examples=[[p, name] for p, name in EXAMPLE_PATHS],
-                inputs=[input_image, _plant_name],
-                cache_examples=False,
-                elem_id="example-gallery",
-            )
+            gr.HTML("<h2>Example Images</h2><p>Click an image's name below to load it.</p>")
+            with gr.Row(elem_id="example-gallery"):
+                example_btns = []
+                for path, name in EXAMPLE_PATHS:
+                    with gr.Column(scale=1, min_width=120, elem_classes=["ex-card"]):
+                        gr.Image(value=path, interactive=False, show_label=False,
+                                 height=130, elem_classes=["ex-thumb"])
+                        example_btns.append(gr.Button(name, size="sm", elem_classes=["ex-btn"]))
 
             gr.HTML("<h2>Area Statistics</h2>")
             area_table = gr.Dataframe(
@@ -832,6 +834,11 @@ with gr.Blocks(title="Leaf CT Scan Segmentation") as demo:
                 outputs=[input_file, input_image, output_label, output_color, output_overlay, area_table, dl_csv, dl_label, dl_color, dl_overlay, status],
                 cancels=[run_event],
             )
+            for btn, (path, _) in zip(example_btns, EXAMPLE_PATHS):
+                btn.click(
+                    fn=lambda p=path: (Image.open(p).convert("L"), "Image loaded — Click 'Run Segmentation' to process."),
+                    outputs=[input_image, status],
+                )
 
         # ── TAB 2: TIFF STACK ─────────────────────────────────────────────────
         with gr.Tab("Stack Image"):
@@ -858,6 +865,15 @@ with gr.Blocks(title="Leaf CT Scan Segmentation") as demo:
             with gr.Row():
                 stack_submit_btn = gr.Button("Run Segmentation on Stack", variant="primary", elem_id="stack-run-btn")
                 stack_clear_btn  = gr.Button("Clear", variant="secondary")
+
+            gr.HTML("<h2>Example Stacks</h2><p>Click a stack'name below to load it.</p>")
+            with gr.Row(elem_id="stack-example-gallery"):
+                stack_example_btns = []
+                for _, preview, name in STACK_EXAMPLE_PATHS:
+                    with gr.Column(scale=1, min_width=120, elem_classes=["stack-ex-card"]):
+                        gr.Image(value=preview, interactive=False, show_label=False,
+                                 height=100, elem_classes=["stack-ex-thumb"])
+                        stack_example_btns.append(gr.Button(name, size="sm", elem_classes=["stack-ex-btn"]))
 
             gr.HTML("<h2>Volume Statistics (All slices)</h2>")
             stack_area_table = gr.Dataframe(
@@ -892,6 +908,11 @@ with gr.Blocks(title="Leaf CT Scan Segmentation") as demo:
                          stack_dl_label, stack_dl_color, stack_dl_overlay, status],
                 cancels=[stack_run_event],
             )
+            for btn, (path, _preview, _name) in zip(stack_example_btns, STACK_EXAMPLE_PATHS):
+                btn.click(
+                    fn=lambda p=path: preview_and_store_stack(p),
+                    outputs=[stack_preview, stack_path_state, status],
+                )
 
     gr.Markdown("Note: Processing time depends on image size and server load.")
 
