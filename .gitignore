@@ -180,3 +180,4 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 examples/.DS_Store
+.DS_Store
