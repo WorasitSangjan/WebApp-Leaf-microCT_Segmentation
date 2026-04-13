@@ -24,10 +24,10 @@ Run on a free T4 GPU:
 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/WorasitSangjan/WebApp-Leaf-microCT-Segmentation/blob/main/run_colab.ipynb)
 
-1. Open the notebook above
-2. Set runtime to **T4 GPU** (Runtime → Change runtime type)
+1. Click the "Google aboveColab" button above 
+2. In the Google clob notebook, set runtime to **T4 GPU** (Runtime → Change runtime type)
 3. Click **Run All**
-4. Open the `gradio.live` link that appears
+4. Click the `gradio.live` link that appears
 
 ### Option 3 — Run Locally
 ```bash
