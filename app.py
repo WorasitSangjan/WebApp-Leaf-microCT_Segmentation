@@ -1,4 +1,4 @@
-# Web application for Leaf microCT Segmentation
+# Web application for Leaf micro-CT Segmentation
 # Author: Worasit Sanjgan
 # Date: 7 April 2026
 
