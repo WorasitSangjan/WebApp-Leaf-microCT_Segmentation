@@ -502,6 +502,28 @@ button[role="tab"]:hover:not([aria-selected="true"]) {
     padding: 8px 16px !important;
     background: var(--c-surface-alt) !important;
 }
+.deployment-block {
+    border: 1px solid var(--c-border) !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 10px 16px !important;
+    background: var(--c-surface-alt) !important;
+    margin-top: 12px !important;
+}
+.deployment-block p {
+    margin: 0 !important;
+    font-size: 1.0625rem !important;
+    color: var(--c-text) !important;
+    -webkit-text-fill-color: var(--c-text) !important;
+}
+.deployment-block strong {
+    color: var(--c-text) !important;
+    -webkit-text-fill-color: var(--c-text) !important;
+}
+.deployment-block a {
+    color: var(--c-green-dark) !important;
+    -webkit-text-fill-color: var(--c-green-dark) !important;
+    text-decoration: underline !important;
+}
 #status-block label {
     font-weight: 700 !important;
     color: var(--c-green) !important;
@@ -782,7 +804,16 @@ with gr.Blocks(**blocks_kwargs) as demo:
         <h1>Leaf CT Scan Segmentation</h1>
         <p>Automatic leaf CT scan segmentation using an Encoder-only Mask Transformer (EoMT) with a DINOv3 ViT-L backbone.</p>
         <p><strong>Features:</strong> Upload a single image or a multi-slice TIFF stack to visualize tissue segmentation and export area statistics.</p>
+        <div class="deployment-block">
+            <p>
+                <strong>Deployment Options:</strong> For accelerated processing, please run this application via: 
+                <a href="https://colab.research.google.com/github/WorasitSangjan/WebApp-Leaf-microCT-Segmentation/blob/main/run_colab.ipynb" target="_blank">Google Colab (GPU)</a> |
+                <a href="https://github.com/WorasitSangjan/WebApp-Leaf-microCT-Segmentation#option-3--run-locally-python-310" target="_blank">Your Local Computer</a>
+            </p>
+        </div>
+
     """)
+
 
     status = gr.Textbox(
         label="Status",
