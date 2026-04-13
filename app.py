@@ -13,7 +13,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from PIL import Image
-from transformers import AutoModel
+from transformers import AutoModel, AutoConfig
 import os
 import csv
 import tempfile
@@ -62,9 +62,15 @@ class EoMT_ViTL(nn.Module):
     def __init__(self, num_classes=5, num_queries=100):
         super().__init__()
         self.conv_in  = nn.Conv2d(1, 3, kernel_size=1)
-        self.backbone = AutoModel.from_pretrained(
-            "facebook/dinov3-vitl16-pretrain-lvd1689m", local_files_only=False
-        )
+        # Initialize architecture directly from local config to bypass gated HuggingFace download
+        try:
+            config_path = os.path.join(os.path.dirname(__file__), "config.json")
+            config = AutoConfig.from_pretrained(config_path)
+            self.backbone = AutoModel.from_config(config)
+        except Exception:
+            self.backbone = AutoModel.from_pretrained(
+                "facebook/dinov3-vitl16-pretrain-lvd1689m", local_files_only=False
+            )
         embed_dim        = self.backbone.config.hidden_size   # 1024
         self._embed_dim  = embed_dim
         self._patch_size = self.backbone.config.patch_size    # 16
