@@ -13,7 +13,7 @@ pinned: true
 
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Open Source](https://img.shields.io/badge/Open%20Source-Yes-brightgreen.svg)
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://python.org)
 [![Platform](https://img.shields.io/badge/Platform-Gradio%20%7C%20Colab-orange.svg)](https://gradio.app/)
 ![Science](https://img.shields.io/badge/Science-Plant%20Phenomics-green.svg)
 ![Research](https://img.shields.io/badge/Research-USDA--ARS-navy.svg)
@@ -36,10 +36,20 @@ Run on a free T4 GPU:
 3. Click **Run All**
 4. Click the `gradio.live` link that appears
 
-### Option 3 — Run Locally
+### Option 3 — Run Locally (Python 3.10+)
+
+We strongly recommend creating a Python virtual environment to run the application to avoid any dependency conflicts:
+
 ```bash
+# 1. Clone the repository
 git clone https://github.com/WorasitSangjan/WebApp-Leaf-microCT-Segmentation.git
 cd WebApp-Leaf-microCT-Segmentation
+
+# 2. Create and activate a Virtual Environment
+python3 -m venv venv
+source venv/bin/activate    # On Windows, use `venv\Scripts\activate`
+
+# 3. Install requirements and run
 pip install -r requirements.txt
 python app.py
 ```
