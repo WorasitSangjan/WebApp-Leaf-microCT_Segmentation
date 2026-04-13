@@ -49,6 +49,10 @@ For users who prefer to run the application on their own computers instead of th
 **1. Download the repository**
 Open your Terminal or Command Prompt and run the following commands:
 ```bash
+# Optional: Move to your Desktop first so the resulting folder is easy to find
+cd Desktop
+
+# Download the repository
 git clone https://github.com/WorasitSangjan/WebApp-Leaf-microCT-Segmentation.git
 cd WebApp-Leaf-microCT-Segmentation
 ```
