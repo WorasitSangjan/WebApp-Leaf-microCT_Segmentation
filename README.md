@@ -1,5 +1,5 @@
 ---
-title: Leaf CT Scan Segmentation
+title: Leaf micro-CT Scan Segmentation Web-Application
 emoji: 🌿
 colorFrom: green
 colorTo: green
@@ -9,7 +9,7 @@ app_file: app.py
 pinned: true
 ---
 
-# Leaf micro-CT Scan Segmentation
+# Leaf micro-CT Scan Segmentation Web-Application
 
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Open Source](https://img.shields.io/badge/Open%20Source-Yes-brightgreen.svg)
